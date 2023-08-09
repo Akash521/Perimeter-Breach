@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RTSP Screenshot Capture</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+    <script src="d3.js"></script>
+    
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #image-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>RTSP Screenshot Capture</h2>
+        <form id="rtsp-form">
+            <label for="rtsp-url">Enter RTSP URL:</label>
+            <input type="text" id="rtsp-url" name="rtsp_url" placeholder="rtsp://your_rtsp_url_here">
+            <button type="button" id="capture-button">Capture Screenshot</button>
+            <button type="button" id="coordinate-button">Send Coordinates</button>
+        </form>
+        <!-- <div id="image-container"></div> -->
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class = "parent" id="iVideo">
+                <img id="video_p"  >
+            </div>
+            <div id="int_per_cc" class="col-md-12 col-sm-12 col-xs-12" style="position:relative;margin-top: -1px;margin-left: 13px; display:none;">
+                <div id="imgCanv" style="background-position:center;background-repeat:no-repeat;background-size:contain;text-align:center">
+                    <canvas id="output"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="peri.js"></script>
+    <script>
+       $(document).ready(function() {
+            $('#capture-button').click(function() {
+                var rtspUrl = $('#rtsp-url').val();
+                
+                if (!rtspUrl) {
+                    alert('Please enter an RTSP URL');
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://127.0.0.1:5000/capture-screenshot',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        rtsp_url: rtspUrl
+                    }),
+                    success: function(data) {
+                        var imageUrl = data.image_url;
+                        var width = data.width;
+                        var height = data.height;
+                        // $('#image-container').html('<img src="' + imageUrl + '" alt="Captured Screenshot" width="' + width + '" height="' + height + '">');
+                        var PerimiterJSON = {
+                            img: data.image_url,
+                            width: data.width,
+                            height: data.height,
+                        };
+                        localStorage.setItem(
+                        "breach_image_perimeter",
+                        JSON.stringify(PerimiterJSON)
+                        );
+                    say_thanks_overlay_1();
+                    },
+                    error: function() {
+                        alert('Failed to capture screenshot');
+                    }
+                });
+            });
+
+
+            $('#coordinate-button').click(function() {
+                var coordinate = localStorage.getItem('perimeterBoundary')
+                console.log(JSON.parse(coordinate))
+                
+                // if (!rtspUrl) {
+                //     alert('Please enter an RTSP URL');
+                //     return;
+                // }
+
+                // $.ajax({
+                //     type: 'POST',
+                //     url: 'http://127.0.0.1:5000/capture-screenshot',
+                //     contentType: 'application/json',
+                //     data: JSON.stringify({
+                //         rtsp_url: JSON.stringify(coordinate),
+                //     }),
+                //     success: function(data) {
+                //         var imageUrl = data.image_url;
+                //         var width = data.width;
+                //         var height = data.height;
+                //         // $('#image-container').html('<img src="' + imageUrl + '" alt="Captured Screenshot" width="' + width + '" height="' + height + '">');
+                //         var PerimiterJSON = {
+                //             img: data.image_url,
+                //             width: data.width,
+                //             height: data.height,
+                //         };
+                //         localStorage.setItem(
+                //         "breach_image_perimeter",
+                //         JSON.stringify(PerimiterJSON)
+                //         );
+                //     say_thanks_overlay_1();
+                //     },
+                //     error: function() {
+                //         alert('Failed to capture screenshot');
+                //     }
+                // });
+            });
+
+
+        });
+
+
+    </script>
+</body>
+</html>
